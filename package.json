@@ -1,12 +1,8 @@
 {
-  "name": "ai-downloader-bot",
+  "name": "karzo-dl-bot",
   "version": "1.0.0",
   "main": "bot.js",
-  "scripts": {
-    "start": "node bot.js"
-  },
   "dependencies": {
-    "grammy": "^1.20.0",
-    "axios": "^1.6.0"
+    "grammy": "^1.20.0"
   }
 }
