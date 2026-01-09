@@ -79,3 +79,11 @@ http.createServer((req, res) => {
 }).listen(8000, '0.0.0.0');
 
 bot.start();
+exec(`yt-dlp --no-playlist --no-check-certificate --format "best[ext=mp4]/best" -o "${fileName}" "${text}"`, async (error) => {
+    if (error) {
+        console.error(error); // لێرە هەڵەکە لە لۆگی Koyeb دەردەکەوێت
+        await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id);
+        return ctx.reply('ببورە، کێشەیەک لە داگرتنی ئەم ڤیدیۆیە هەیە. تکایە دواتر تاقی بکەرەوە. ❌');
+    }
+    // پڕۆسەی ناردن...
+});
