@@ -62,3 +62,25 @@ server.listen(8000, '0.0.0.0', () => {
 });
 
 bot.start();
+// ١. ئەم بەشە لە سەرەتای کۆدەکە (دوای ADMIN_ID) دابنێ
+let users = new Set();
+
+// ٢. ئەمە بخەرە پێش فەرمانی start بۆ ئەوەی هەر کەسێک نامەی نارد ناوی تۆمار بکرێت
+bot.on("message", async (ctx, next) => {
+    if (ctx.from) {
+        users.add(ctx.from.id);
+    }
+    return next();
+});
+
+// ٣. فەرمانی stats
+bot.command("stats", (ctx) => {
+    if (ctx.from.id === ADMIN_ID) {
+        ctx.reply(`📊 ئاماری بۆتەکەت:\n\n👥 تێکڕای بەکارهێنەران: ${users.size}`);
+    } else {
+        ctx.reply("ببورە، ئەم فەرمانە تەنها بۆ گەشەپێدەرە. 👨‍💻");
+    }
+});
+
+// ٤. ئەمە هەمیشە دەبێت دێڕی کۆتایی بێت
+bot.start();
