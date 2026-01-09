@@ -51,3 +51,14 @@ bot.on('message', async (ctx) => {
 
 http.createServer((req, res) => { res.end('Active'); }).listen(process.env.PORT || 8000);
 bot.start();
+// فەرمانی یارمەتی
+bot.command("help", (ctx) => {
+    ctx.reply("💡 چۆن بۆتەکە بەکاردێت؟\n\n١. بچۆ ناو (TikTok, Instagram, Facebook, YouTube).\n٢. لینکی ڤیدیۆیەک کۆپی بکە.\n٣. لینکەکە لێرە پەییست بکە و بۆمی بنێرە.\n٤. چەند چرکەیەک چاوەڕێ بکە تا بۆت دایدەگرم. 📥");
+});
+
+// فەرمانی دەربارە
+bot.command("about", (ctx) => {
+    ctx.reply("🤖 دەربارەی ئەم بۆتە:\n\nئەم بۆتە پەرەپێدراوە بۆ داگرتنی ڤیدیۆ لە هەموو سۆشیاڵ میدیاکان بەبێ نیشانەی ئاویی (Watermark).\n\n👨‍💻 گەشەپێدەر: @karzo55\n📢 کەناڵ: @yalla_tech", {
+        reply_markup: welcomeKeyboard
+    });
+});
