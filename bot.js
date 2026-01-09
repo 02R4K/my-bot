@@ -3,87 +3,68 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const http = require('http');
 
-// ١. زانیارییە سەرەکییەکان
+// 1. زانیارییەکان (تۆکن و ئایدی خۆت)
 const bot = new Bot('7931669330:AAEKnZMBTeq6KERGZKMAGgy1bt7IfenbTx8');
 const ADMIN_ID = 5158181092;
-let users = new Set(); // بۆ پاشکەوتکردنی ئایدی بەکارهێنەران
+let users = new Set();
 
-// ٢. کیبۆردی کەناڵ و گەشەپێدەر
-const welcomeKeyboard = new InlineKeyboard()
-  .url("📢 کەناڵی فەرمی", "https://t.me/yalla_tech")
+const keyboard = new InlineKeyboard()
+  .url("📢 کەناڵ", "https://t.me/yalla_tech")
   .url("👨‍💻 گەشەپێدەر", "https://t.me/karzo55");
 
-// ٣. سیستەمی ئاگادارکردنەوەی ئەدمین و تۆمارکردنی بەکارهێنەر
+// 2. سیستەمی ئامار و ئاگادارکردنەوە
 bot.on("message", async (ctx, next) => {
     if (ctx.from && !users.has(ctx.from.id)) {
         users.add(ctx.from.id);
-        
-        // نامە بۆ تۆ دێت کاتێک کەسێکی نوێ بۆتەکە بەکاردێنێت
-        const notification = `🔔 بەکارهێنەرێکی نوێ هات!\n\n👤 ناو: ${ctx.from.first_name}\n🆔 ئایدی: ${ctx.from.id}\n🔗 یوزەرنایم: @${ctx.from.username || 'بێ یوزەرنایم'}`;
-        try {
-            await bot.api.sendMessage(ADMIN_ID, notification);
-        } catch (e) { console.error("Error sending notification"); }
+        const msg = `🔔 نوێ:\n👤 ${ctx.from.first_name}\n🆔 ${ctx.from.id}\n🔗 @${ctx.from.username || 'بێ یوزەر'}`;
+        try { await bot.api.sendMessage(ADMIN_ID, msg); } catch (e) {}
     }
     return next();
 });
 
-// ٤. فەرمانی Start
 bot.command("start", (ctx) => {
-    ctx.reply(`سڵاو ${ctx.from.first_name} گیان! 🌹\n\nبەخێربێیت بۆ **All Video Downloader**.\n\nتەنها لینکی ڤیدیۆ بنێرە (TikTok, Instagram, FB, YouTube) تا بۆت دابگرم. 📥`, {
-        parse_mode: "Markdown",
-        reply_markup: welcomeKeyboard
-    });
+    ctx.reply(`سڵاو ${ctx.from.first_name}! بەخێرهاتی بۆ بۆتی All Video Downloader. 📥\n\nتەنها لینکی ڤیدیۆکە بنێرە بۆ داگرتن.`, { reply_markup: keyboard });
 });
 
-// ٥. فەرمانی Stats (تەنها بۆ ئەدمین)
 bot.command("stats", (ctx) => {
     if (ctx.from.id === ADMIN_ID) {
-        ctx.reply(`📊 ئاماری بۆتەکەت:\n\n👥 کۆی گشتی بەکارهێنەران: ${users.size}`);
-    } else {
-        ctx.reply("ببورە، ئەم فەرمانە تەنها بۆ گەشەپێدەرە. 👨‍💻");
+        ctx.reply(`📊 بەکارهێنەرانی چالاک: ${users.size}`);
     }
 });
 
-// ٦. پڕۆسەی داگرتنی ڤیدیۆ
+// 3. داگرتنی ڤیدیۆ (TikTok, FB, Insta, YT)
 bot.on('message', async (ctx) => {
     const text = ctx.message.text;
-    if (!text || !text.includes('http')) return;
+    if (!text || !text.startsWith('http')) return;
 
-    const waitMsg = await ctx.reply('⏳ خەریکی پشکنینی لینکەکەم، تکایە چاوەڕێ بکە...');
+    const waitMsg = await ctx.reply('⏳ چاوەڕێ بکە... خەریکی داگرتنم');
     const fileName = `video_${Date.now()}.mp4`;
 
-    // بەکارهێنانی yt-dlp بۆ داگرتنی ڤیدیۆ لە هەموو سایتەکان
-    exec(`yt-dlp --no-playlist --format "best[ext=mp4]/best" -o "${fileName}" "${text}"`, async (error) => {
+    // بەکارهێنانی فلتەری تایبەت بۆ تێپەڕاندنی هەندێک بڵۆک
+    exec(`yt-dlp --no-playlist --no-check-certificate -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" -o "${fileName}" "${text}"`, async (error) => {
         if (error) {
+            console.error(error);
             await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id);
-            return ctx.reply('ببورە، کێشەیەک لە داگرتنی ئەم ڤیدیۆیە هەیە. ❌');
+            return ctx.reply('❌ ببورە، کێشەیەک لە داگرتن هەبوو. ڕەنگە لینکەکە پارێزراو بێت یان سێرڤەر بڵۆک کرابێت.');
         }
 
         try {
             await ctx.replyWithVideo(new InputFile(fileName), {
-                caption: "✅ ڤیدیۆکەت بە سەرکەوتوویی داگیرا\n\n🆔 @KarzoDL_bot",
-                reply_markup: welcomeKeyboard
+                caption: "✅ فەرموو ڤیدیۆکەت\n🆔 @KarzoDL_bot",
+                reply_markup: keyboard
             });
             await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id);
             if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
         } catch (e) {
-            ctx.reply('ببورە، کێشەیەک لە ناردنی ڤیدیۆکە دروست بوو.');
+            ctx.reply('❌ ڤیدیۆکە زۆر گەورەیە یان کێشەی ناردنی هەیە.');
         }
     });
 });
 
-// ٧. ڕێکخستنی پۆرت بۆ Koyeb (بۆ ئەوەی هەمیشە Healthy بێت)
+// 4. گرنگ بۆ Koyeb: دروستکردنی پۆرت بۆ ئەوەی بۆتەکە نەکوژێتەوە
 http.createServer((req, res) => {
     res.writeHead(200);
-    res.end('Bot is running on Koyeb');
-}).listen(8000, '0.0.0.0');
+    res.end('Bot is Active');
+}).listen(process.env.PORT || 8000);
 
 bot.start();
-exec(`yt-dlp --no-playlist --no-check-certificate --format "best[ext=mp4]/best" -o "${fileName}" "${text}"`, async (error) => {
-    if (error) {
-        console.error(error); // لێرە هەڵەکە لە لۆگی Koyeb دەردەکەوێت
-        await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id);
-        return ctx.reply('ببورە، کێشەیەک لە داگرتنی ئەم ڤیدیۆیە هەیە. تکایە دواتر تاقی بکەرەوە. ❌');
-    }
-    // پڕۆسەی ناردن...
-});
