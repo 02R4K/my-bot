@@ -49,3 +49,16 @@ bot.on('message', async (ctx) => {
 });
 
 bot.start();
+// ئەم بەشە بۆ ئەوەیە Koyeb بزانێت بۆتەکە چالاکە
+const http = require('http');
+const server = http.createServer((req, res) => {
+    res.writeHead(200);
+    res.end('Bot is running!');
+});
+
+// لێرەدا پۆرتەکە و ئایپی 0.0.0.0 دیاری دەکەین
+server.listen(8000, '0.0.0.0', () => {
+    console.log('Server is listening on port 8000');
+});
+
+bot.start();
